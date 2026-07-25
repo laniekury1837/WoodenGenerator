@@ -21,11 +21,11 @@ object JsonReplacer {
 
             addJson(JsonType.BLOCKSTATE, customBlockId.path, template.blockstate.transform())
             template.blockModels.mapKeys { it.key.transform() } .mapValues { it.value.transform() } .forEach { (_, json) -> 
-                addJson(JsonType.BLOCK_MODEL, customBlockId.path, json)
+                addJson(JsonType.BLOCK_MODEL, customBlockId.path.removePrefix("block/"), json)
             }
             addJson(JsonType.ITEM_MODEL, customBlockId.path, template.itemModel.transform())
             template.textures.mapKeys { it.key.transform() }.forEach { ( _, bytes) ->
-                addImage(listOf(customBlockId.path), bytes)
+                addImage(listOf(customBlockId.namespace, "textures", "${customBlockId.path}.png"), bytes)
             }
         }
     }
