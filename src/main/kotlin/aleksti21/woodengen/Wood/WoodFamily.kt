@@ -1,5 +1,6 @@
 package aleksti21.woodengen.Wood
 
+import aleksti21.woodengen.BlockPart
 import aleksti21.woodengen.Family
 import net.fabricmc.fabric.api.registry.CompostingChanceRegistry
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry
@@ -31,5 +32,12 @@ data class WoodFamily(
 
         }
         StrippableBlockRegistry.register(blocks[WoodPart.LOG], blocks[WoodPart.STRIPPED_LOG])
+    }
+
+    override fun getColorForPart(part: BlockPart): Int? {
+        return when (part) {
+            WoodPart.LEAVES -> config.leavesColor
+            else -> config.woodColor
+        }
     }
 }

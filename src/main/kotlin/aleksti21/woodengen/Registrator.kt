@@ -9,7 +9,6 @@ import net.minecraft.util.Identifier
 
 object Registrator {
     val families = mutableListOf<Family>()
-    const val MAX_SETS = 1
 
     private fun registerBlock(name: String, block: Block): Block {
         val id = Identifier.of(MOD_ID, name)
@@ -19,13 +18,11 @@ object Registrator {
     }
 
     fun registerAll(configs: List<ConfigData>) {
-        for (i in 1..MAX_SETS) {
-            for (config in configs) {
-                val family = config.register()
-                for ((part, block) in family.blocks) registerBlock("${family.config.id}_${part.name.lowercase()}", block)
-                family.onRegistered()
-                families.add(family)
-            }
+        for (config in configs) {
+            val family = config.register()
+            for ((part, block) in family.blocks) registerBlock("${family.config.id}_${part.name.lowercase()}", block)
+            family.onRegistered()
+            families.add(family)
         }
     }
 }

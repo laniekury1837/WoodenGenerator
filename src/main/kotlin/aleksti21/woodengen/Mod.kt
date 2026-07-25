@@ -5,7 +5,7 @@ import aleksti21.woodengen.Wood.WoodPart
 import net.fabricmc.api.ModInitializer
 
 const val MOD_ID = "woodengen"
-val CONFIGS = listOf<ConfigData>(WoodConfigData("custom"))
+val CONFIGS = listOf<ConfigData>(WoodConfigData("custom", woodColor = 0xFFDEAB60.toInt(), leavesColor = 0xFFFC6DA0.toInt()))
 val PARTS = listOf(WoodPart.entries)
 class Mod : ModInitializer {
     override fun onInitialize() {

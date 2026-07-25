@@ -5,8 +5,35 @@ import aleksti21.woodengen.JsonType
 import aleksti21.woodengen.addImage
 import aleksti21.woodengen.addJson
 import net.minecraft.registry.Registries
+import java.awt.Color
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 object JsonReplacer {
+    private fun recolor(texture: ByteArray, color: Int?): ByteArray {
+        if (color == null) return texture
+        val image = ImageIO.read(ByteArrayInputStream(texture))
+        val tr = (color shr 16) and 0xFF
+        val tg = (color shr 8) and 0xFF
+        val tb = (color and 0xFF)
+
+        for (x in 0 until image.width) {
+            for (y in 0 until image.height) {
+                val argb = Color(image.getRGB(x, y), true)
+                if (argb.alpha != 0) {
+                    val r = tr * argb.red / 255
+                    val g = tg * argb.green / 255
+                    val b = tb * argb.blue / 255
+                    image.setRGB(x, y, Color(r,g,b, argb.alpha).rgb)
+                }
+            }
+        }
+        val outputStream = ByteArrayOutputStream()
+        ImageIO.write(image, "png", outputStream)
+        return outputStream.toByteArray()
+    }
+
     fun transformAndRegister(family: Family) {
         for ((part, block) in family.blocks) {
             val template = JsonLoader.JSON_MAP[part] ?: return
@@ -25,7 +52,7 @@ object JsonReplacer {
             }
             addJson(JsonType.ITEM_MODEL, customBlockId.path, template.itemModel.transform())
             template.textures.mapKeys { it.key.transform() }.forEach { ( _, bytes) ->
-                addImage(listOf(customBlockId.namespace, "textures", "${customBlockId.path}.png"), bytes)
+                addImage(listOf(customBlockId.namespace, "textures", "${customBlockId.path}.png"), recolor(bytes, family.getColorForPart(part)))
             }
         }
     }
