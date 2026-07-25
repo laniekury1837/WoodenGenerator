@@ -3,6 +3,7 @@ package aleksti21.woodengen.client
 import aleksti21.woodengen.BlockPart
 import aleksti21.woodengen.MOD_ID
 import aleksti21.woodengen.PARTS
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import de.rubixdev.yarrp.api.RuntimeResourcePack
 import net.fabricmc.api.ClientModInitializer
@@ -30,22 +31,44 @@ class ModClient : ClientModInitializer {
                     PARTS.forEach { part ->
                         part.forEach { item ->
                             val id = Registries.BLOCK.getId(item.baseBlock)
-                            val blockstateId = Identifier.of(id.namespace, "blockstates/${id.path}.json")
-
-                            val blockstateString = manager.getResource(blockstateId).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
+                            //1: blockstate
+                            val blockstateString = manager.getResource(Identifier.of(id.namespace, "blockstates/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
+                            val blockstateJson = JsonParser.parseString(blockstateString).asJsonObject
+                            //2: model
                             val modelPaths = mutableListOf<String>()
                             val blockModels = mutableMapOf<String, String>()
 
-                            val blockstateJson = JsonParser.parseString(blockstateString).asJsonObject
                             if (blockstateJson.has("variants")) blockstateJson["variants"].asJsonObject.entrySet().forEach { entry ->
                                 val variant = entry.value
-                                if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model").asString) else variant.asJsonArray.forEach {model -> model.asJsonObject.get("model").asString}
+                                if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model").asString) else variant.asJsonArray.forEach {model -> modelPaths.add(model.asJsonObject.get("model").asString)}
                             } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.getAsJsonObject("apply").get("model").asString) }
                             modelPaths.forEach { path ->
-                                val modelId = Identifier.of(id.namespace, "models/${path.drop(10)}.json")
-                                blockModels[modelId.toString()] = manager.getResource(modelId).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
+                                val path = Identifier.of(path)
+                                blockModels[path.toString()] = manager.getResource(Identifier.of(path.namespace, "models/${path.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
                             }
+                            //3: item model
+                            val itemModelString = manager.getResource(Identifier.of(id.namespace, "models/item/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
+                            val itemModelJson = JsonParser.parseString(itemModelString).asJsonObject
+                            //4: textures
+                            val texturePaths = mutableSetOf<String>()
+                            val textures = mutableMapOf<String, ByteArray>()
 
+                            fun textureGet(json: JsonObject) {
+                                if (json.has("texture")) {
+                                    json["texture"].asJsonObject.entrySet().forEach { entry ->
+                                        if (entry.value.asString[0] != '#') texturePaths.add(entry.value.asString)
+                                    }
+                                }
+                            }
+                            textureGet(blockstateJson)
+                            textureGet(itemModelJson)
+
+                            texturePaths.forEach { path ->
+                                val path = Identifier.of(path)
+                                textures[path.toString()] = manager.getResource(Identifier.of(path.namespace, "textures/${path.path}")).getOrNull()?.inputStream?.use { it.readBytes() } ?: return@forEach
+                            }
+                            //5: final
+                            BLOCKSTATE_JSON_MAP[item] = JsonDataClientTemplate(blockstateString, blockModels, itemModelString, textures)
                         }
                         println("Успешно прочитано:\n${BLOCKSTATE_JSON_MAP.values.first()}")
                     }
