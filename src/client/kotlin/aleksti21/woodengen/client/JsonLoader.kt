@@ -2,6 +2,7 @@ package aleksti21.woodengen.client
 
 import aleksti21.woodengen.BlockPart
 import aleksti21.woodengen.PARTS
+import aleksti21.woodengen.Registrator
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
@@ -27,7 +28,7 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
 
                 if (blockstateJson.has("variants")) blockstateJson["variants"].asJsonObject.entrySet().forEach { entry ->
                     val variant = entry.value
-                    if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model")?.asString ?: return@forEach) else variant.asJsonArray.forEach {model -> modelPaths.add(model.asJsonObject.get("model")?.asString ?: return@forEach) }
+                    if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model")?.asString ?: "") else variant.asJsonArray.forEach {model -> modelPaths.add(model.asJsonObject.get("model")?.asString ?: return@forEach) }
                 } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.get("apply")?.asJsonObject?.get("model")?.asString ?: return@forEach) }
                 modelPaths.forEach { path ->
                     val path = Identifier.of(path)
@@ -61,7 +62,7 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
                 //5: final
                 JSON_MAP[item] = JsonDataClientTemplate(blockstateString, blockModels, itemModelString, textures)
             }
-            println("Успешно прочитано:\n${JSON_MAP.values.first()}")
         }
+        Registrator.families.forEach { family -> JsonReplacer.transformAndRegister(family) }
     }
 }

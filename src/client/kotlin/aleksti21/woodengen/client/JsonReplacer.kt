@@ -5,6 +5,7 @@ import aleksti21.woodengen.JsonType
 import aleksti21.woodengen.addImage
 import aleksti21.woodengen.addJson
 import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 import java.awt.Color
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -47,12 +48,12 @@ object JsonReplacer {
             }
 
             addJson(JsonType.BLOCKSTATE, customBlockId.path, template.blockstate.transform())
-            template.blockModels.mapKeys { it.key.transform() } .mapValues { it.value.transform() } .forEach { (_, json) -> 
-                addJson(JsonType.BLOCK_MODEL, customBlockId.path.removePrefix("block/"), json)
+            template.blockModels.mapKeys { it.key.transform() } .mapValues { it.value.transform() } .forEach { (key, json) ->
+                addJson(JsonType.BLOCK_MODEL, Identifier.of(key).path.removePrefix("block/"), json)
             }
             addJson(JsonType.ITEM_MODEL, customBlockId.path, template.itemModel.transform())
-            template.textures.mapKeys { it.key.transform() }.forEach { ( _, bytes) ->
-                addImage(listOf(customBlockId.namespace, "textures", "${customBlockId.path}.png"), recolor(bytes, family.getColorForPart(part)))
+            template.textures.mapKeys { it.key.transform() }.forEach { ( key, bytes) ->
+                addImage(listOf(customBlockId.namespace, "textures", "block", "${Identifier.of(key).path.removePrefix("block/")}.png"), recolor(bytes, family.getColorForPart(part)))
             }
         }
     }
