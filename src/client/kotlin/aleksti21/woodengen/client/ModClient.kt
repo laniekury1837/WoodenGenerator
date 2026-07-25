@@ -1,7 +1,6 @@
 package aleksti21.woodengen.client
 
 import aleksti21.woodengen.BlockPart
-import aleksti21.woodengen.Family
 import aleksti21.woodengen.MOD_ID
 import aleksti21.woodengen.PARTS
 import com.google.gson.JsonParser
@@ -9,7 +8,6 @@ import de.rubixdev.yarrp.api.RuntimeResourcePack
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
-import net.minecraft.client.MinecraftClient
 import net.minecraft.registry.Registries
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
@@ -34,17 +32,18 @@ class ModClient : ClientModInitializer {
                             val id = Registries.BLOCK.getId(item.baseBlock)
                             val blockstateId = Identifier.of(id.namespace, "blockstates/${id.path}.json")
 
-                            val blockstateString = manager.getResource(blockstateId).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() }
+                            val blockstateString = manager.getResource(blockstateId).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
                             val modelPaths = mutableListOf<String>()
                             val blockModels = mutableMapOf<String, String>()
 
                             val blockstateJson = JsonParser.parseString(blockstateString).asJsonObject
                             if (blockstateJson.has("variants")) blockstateJson["variants"].asJsonObject.entrySet().forEach { entry ->
                                 val variant = entry.value
-                                if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model").asString) else variant.asJsonArray.forEach {model -> modelPaths.add(model.asString)}
-                            } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.get("model").asString) }
+                                if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model").asString) else variant.asJsonArray.forEach {model -> model.asJsonObject.get("model").asString}
+                            } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.getAsJsonObject("apply").get("model").asString) }
                             modelPaths.forEach { path ->
-                                blockModels[path] = manager.getResource(Identifier.of("$path.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() }
+                                val modelId = Identifier.of(id.namespace, "models/${path.drop(10)}.json")
+                                blockModels[modelId.toString()] = manager.getResource(modelId).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
                             }
 
                         }
