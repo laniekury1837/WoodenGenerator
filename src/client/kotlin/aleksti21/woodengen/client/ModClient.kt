@@ -40,8 +40,8 @@ class ModClient : ClientModInitializer {
 
                             if (blockstateJson.has("variants")) blockstateJson["variants"].asJsonObject.entrySet().forEach { entry ->
                                 val variant = entry.value
-                                if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model").asString) else variant.asJsonArray.forEach {model -> modelPaths.add(model.asJsonObject.get("model").asString)}
-                            } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.getAsJsonObject("apply").get("model").asString) }
+                                if (variant.isJsonObject) modelPaths.add(variant.asJsonObject.get("model")?.asString ?: return@forEach) else variant.asJsonArray.forEach {model -> modelPaths.add(model.asJsonObject.get("model")?.asString ?: return@forEach) }
+                            } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.get("apply")?.asJsonObject?.get("model")?.asString ?: return@forEach) }
                             modelPaths.forEach { path ->
                                 val path = Identifier.of(path)
                                 blockModels[path.toString()] = manager.getResource(Identifier.of(path.namespace, "models/${path.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
