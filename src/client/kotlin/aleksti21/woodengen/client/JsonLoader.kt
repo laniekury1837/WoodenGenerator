@@ -35,7 +35,7 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
                     blockModels[path.toString()] = manager.getResource(Identifier.of(path.namespace, "models/${path.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
                 }
                 //3: item model
-                val itemModelString = manager.getResource(Identifier.of(id.namespace, "models/item/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
+                val itemModelString = manager.getResource(Identifier.of(id.namespace, "models/item/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: blockstateString
                 val itemModelJson = JsonParser.parseString(itemModelString).asJsonObject
                 //4: textures
                 val texturePaths = mutableSetOf<String>()
