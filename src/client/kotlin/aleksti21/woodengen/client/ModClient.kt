@@ -18,7 +18,7 @@ import kotlin.jvm.optionals.getOrNull
 
 class ModClient : ClientModInitializer {
     override fun onInitializeClient() {
-        val BLOCKSTATE_JSON_MAP = mutableMapOf<BlockPart, JsonDataClientTemplate>()
+        val JSON_MAP = mutableMapOf<BlockPart, JsonDataClientTemplate>()
         val DYNAMIC_PACK = RuntimeResourcePack(
             RuntimeResourcePack.createInfo(Identifier.of(MOD_ID, "dynamic_pack"), Text.literal("Woodengen Dynamic Resources"), "1.0.0"),
             RuntimeResourcePack.createMetadata(Text.literal("Dynamic wood blocks"))
@@ -54,23 +54,27 @@ class ModClient : ClientModInitializer {
                             val textures = mutableMapOf<String, ByteArray>()
 
                             fun textureGet(json: JsonObject) {
-                                if (json.has("texture")) {
+                                if (json.has("textures")) {
                                     json["texture"].asJsonObject.entrySet().forEach { entry ->
                                         if (entry.value.asString[0] != '#') texturePaths.add(entry.value.asString)
                                     }
                                 }
                             }
-                            textureGet(blockstateJson)
+
+                            blockModels.values.forEach { model ->
+                                textureGet(JsonParser.parseString(model).asJsonObject)
+                            }
+
                             textureGet(itemModelJson)
 
                             texturePaths.forEach { path ->
                                 val path = Identifier.of(path)
-                                textures[path.toString()] = manager.getResource(Identifier.of(path.namespace, "textures/${path.path}")).getOrNull()?.inputStream?.use { it.readBytes() } ?: return@forEach
+                                textures[path.toString()] = manager.getResource(Identifier.of(path.namespace, "textures/${path.path}.png")).getOrNull()?.inputStream?.use { it.readBytes() } ?: return@forEach
                             }
                             //5: final
-                            BLOCKSTATE_JSON_MAP[item] = JsonDataClientTemplate(blockstateString, blockModels, itemModelString, textures)
+                            JSON_MAP[item] = JsonDataClientTemplate(blockstateString, blockModels, itemModelString, textures)
                         }
-                        println("Успешно прочитано:\n${BLOCKSTATE_JSON_MAP.values.first()}")
+                        println("Успешно прочитано:\n${JSON_MAP.values.first()}")
                     }
                 }
             }
