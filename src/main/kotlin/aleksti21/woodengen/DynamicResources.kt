@@ -1,8 +1,5 @@
 package aleksti21.woodengen
 
-import aleksti21.woodengen.old.DYNAMIC_PACK
-import aleksti21.woodengen.old.JsonType
-import aleksti21.woodengen.old.MOD_ID
 import de.rubixdev.yarrp.api.RuntimeResourcePack
 import net.minecraft.resource.ResourceType
 import net.minecraft.text.Text

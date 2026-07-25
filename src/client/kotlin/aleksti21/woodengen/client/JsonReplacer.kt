@@ -9,7 +9,7 @@ import net.minecraft.registry.Registries
 object JsonReplacer {
     fun transformAndRegister(family: Family) {
         for ((part, block) in family.blocks) {
-            val template = JsonLoader.JSON_MAP[part]
+            val template = JsonLoader.JSON_MAP[part] ?: return
             val blockId = Registries.BLOCK.getId(part.baseBlock)
             val customBlockId = Registries.BLOCK.getId(block)
 
@@ -19,10 +19,14 @@ object JsonReplacer {
                     .replace(blockId.path, customBlockId.path)
             }
 
-            addJson(JsonType.BLOCKSTATE, customBlockId.path, template?.blockstate?.transform())
-            addJson(JsonType.BLOCK_MODEL, customBlockId.path,  template?.blockModels?.mapKeys { it.key.transform() } ?.mapValues { it.value.transform() })
-            addJson(JsonType.ITEM_MODEL, customBlockId.path, template?.itemModel?.transform())
-            addImage(customBlockId.path,  template?.textures?.mapKeys { it.key.transform() })
+            addJson(JsonType.BLOCKSTATE, customBlockId.path, template.blockstate.transform())
+            template.blockModels.mapKeys { it.key.transform() } .mapValues { it.value.transform() } .forEach { (_, json) -> 
+                addJson(JsonType.BLOCK_MODEL, customBlockId.path, json)
+            }
+            addJson(JsonType.ITEM_MODEL, customBlockId.path, template.itemModel.transform())
+            template.textures.mapKeys { it.key.transform() }.forEach { ( _, bytes) ->
+                addImage(listOf(customBlockId.path), bytes)
+            }
         }
     }
 }
