@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "woodengen",
+  "version": "${version}",
+
+  "name": "Wooden Generator",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "All-Rights-Reserved",
+  "icon": "assets/woodengen/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": ["aleksti21.woodengen.client.ModDataGenerator"],
+    "client": ["aleksti21.woodengen.client.ModClient"],
+    "main": [
+      "aleksti21.woodengen.Mod"
+    ]
+  },
+
+  "mixins": [
+    "woodengen.mixins.json"
+    ,{
+      "config": "woodengen.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
