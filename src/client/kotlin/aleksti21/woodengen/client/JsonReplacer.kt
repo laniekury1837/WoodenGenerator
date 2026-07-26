@@ -9,6 +9,7 @@ import net.minecraft.client.render.RenderLayer
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import java.awt.Color
+import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -16,7 +17,9 @@ import javax.imageio.ImageIO
 object JsonReplacer {
     private fun recolor(texture: ByteArray, color: Int?): ByteArray {
         if (color == null) return texture
-        val image = ImageIO.read(ByteArrayInputStream(texture))
+        val texture = ImageIO.read(ByteArrayInputStream(texture))
+        val image = BufferedImage(texture.width, texture.height, BufferedImage.TYPE_INT_ARGB)
+        image.graphics.drawImage(texture, 0, 0, null)
         val tr = (color shr 16) and 0xFF
         val tg = (color shr 8) and 0xFF
         val tb = (color and 0xFF)
@@ -28,8 +31,8 @@ object JsonReplacer {
                 val argb = Color(image.getRGB(x, y))
                 val pixelHsb = FloatArray(3)
                 val newRgb = Color.HSBtoRGB(targetHsb[0], targetHsb[1], pixelHsb[2])
-                val finalColor = Color(Color(newRgb).red, Color(newRgb).green, Color(newRgb).blue, argb.alpha)
-                image.setRGB(x,y, finalColor.rgb)
+                val finalRgb = (argb.alpha shl 24) or (newRgb and 0x00FFFFFF)
+                image.setRGB(x,y, finalRgb)
             }
         }
         val outputStream = ByteArrayOutputStream()
