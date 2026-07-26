@@ -69,7 +69,10 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
                 println("[JsonLoader] ✅ Загружен шаблон для: ${item.name}. Модели блоков: ${blockModels.keys}")
             }
         }
-        Registrator.families.forEach { family -> JsonReplacer.transformAndRegister(family) }
+        Registrator.families.forEach { family ->
+            JsonReplacer.transformAndRegister(family)
+            family.onClient()
+        }
         if (!isGenerated) {
             isGenerated = true
             MinecraftClient.getInstance().reloadResources()

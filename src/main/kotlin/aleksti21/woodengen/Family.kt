@@ -8,5 +8,6 @@ interface Family {
 //    val entities: Map<EntityPart, Entity>
     val config: ConfigData
     fun onRegistered() {}
+    fun onClient() {}
     fun getColorForPart(part: BlockPart): Int? = null
 }

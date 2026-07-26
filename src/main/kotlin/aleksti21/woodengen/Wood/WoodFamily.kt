@@ -2,11 +2,13 @@ package aleksti21.woodengen.Wood
 
 import aleksti21.woodengen.BlockPart
 import aleksti21.woodengen.Family
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
 import net.fabricmc.fabric.api.registry.CompostingChanceRegistry
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.fabricmc.fabric.api.registry.StrippableBlockRegistry
 import net.minecraft.block.Block
+import net.minecraft.client.render.RenderLayer
 
 data class WoodFamily(
     override val blocks: Map<WoodPart, Block> = mapOf(),
@@ -32,6 +34,12 @@ data class WoodFamily(
 
         }
         StrippableBlockRegistry.register(blocks[WoodPart.LOG], blocks[WoodPart.STRIPPED_LOG])
+    }
+
+    override fun onClient() {
+        blocks.forEach { (part, block) ->
+            BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), blocks[WoodPart.DOOR], blocks[WoodPart.TRAPDOOR])
+        }
     }
 
     override fun getColorForPart(part: BlockPart): Int? {

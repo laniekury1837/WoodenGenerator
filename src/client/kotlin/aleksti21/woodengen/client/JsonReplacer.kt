@@ -23,9 +23,10 @@ object JsonReplacer {
             for (y in 0 until image.height) {
                 val argb = Color(image.getRGB(x, y), true)
                 if (argb.alpha != 0) {
-                    val r = tr * argb.red / 255
-                    val g = tg * argb.green / 255
-                    val b = tb * argb.blue / 255
+                    val gray = (argb.red + argb.green + argb.blue) / 3
+                    val r = tr * gray / 255
+                    val g = tg * gray / 255
+                    val b = tb * gray / 255
                     image.setRGB(x, y, Color(r,g,b, argb.alpha).rgb)
                 }
             }
