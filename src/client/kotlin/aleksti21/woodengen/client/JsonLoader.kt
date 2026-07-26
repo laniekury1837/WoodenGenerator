@@ -14,6 +14,7 @@ import kotlin.jvm.optionals.getOrNull
 
 object JsonLoader : SimpleSynchronousResourceReloadListener {
     val JSON_MAP = mutableMapOf<BlockPart, JsonDataClientTemplate>()
+    private var isGenerated = false
     override fun getFabricId() = Identifier.of("woodengen", "listener")
 
     override fun reload(manager: ResourceManager) {
@@ -23,22 +24,25 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
                 //1: blockstate
                 val blockstateString = manager.getResource(Identifier.of(id.namespace, "blockstates/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
                 val blockstateJson = JsonParser.parseString(blockstateString).asJsonObject
-                //2: model
-                val modelPaths = mutableListOf<String>()
+                //2: models
+                val modelPaths = mutableSetOf<String>()
                 val blockModels = mutableMapOf<String, String>()
+
+                val itemModelString = manager.getResource(Identifier.of(id.namespace, "models/item/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: blockModels.values.firstOrNull() ?: ""
+                val itemModelJson = JsonParser.parseString(itemModelString).asJsonObject
 
                 if (blockstateJson.has("variants")) blockstateJson["variants"].asJsonObject.entrySet().forEach { entry ->
                     val variant = entry.value
                     if (variant.isJsonObject) variant.asJsonObject.get("model")?.asString?.let { modelPaths.add(it) } else variant.asJsonArray.forEach {model -> modelPaths.add(model.asJsonObject.get("model")?.asString ?: return@forEach) }
                 } else if (blockstateJson.has("multipart")) blockstateJson["multipart"].asJsonArray.forEach { model -> modelPaths.add(model.asJsonObject.get("apply")?.asJsonObject?.get("model")?.asString ?: return@forEach) }
+
+                if (itemModelJson.has("parent")) if (itemModelJson["parent"].asString.contains("block/")) modelPaths.add(itemModelJson["parent"].asString)
+
                 modelPaths.forEach { path ->
                     val path = Identifier.of(path)
                     blockModels[path.toString()] = manager.getResource(Identifier.of(path.namespace, "models/${path.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: return@forEach
                 }
-                //3: item model
-                val itemModelString = manager.getResource(Identifier.of(id.namespace, "models/item/${id.path}.json")).getOrNull()?.inputStream?.bufferedReader()?.use { it.readText() } ?: blockModels.values.firstOrNull() ?: ""
-                val itemModelJson = JsonParser.parseString(itemModelString).asJsonObject
-                //4: textures
+                //3: textures
                 val texturePaths = mutableSetOf<String>()
                 val textures = mutableMapOf<String, ByteArray>()
 
@@ -66,6 +70,9 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
             }
         }
         Registrator.families.forEach { family -> JsonReplacer.transformAndRegister(family) }
-        MinecraftClient.getInstance().reloadResources()
+        if (!isGenerated) {
+            isGenerated = true
+            MinecraftClient.getInstance().reloadResources()
+        }
     }
 }

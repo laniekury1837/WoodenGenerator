@@ -32,6 +32,7 @@ object JsonReplacer {
         }
         val outputStream = ByteArrayOutputStream()
         ImageIO.write(image, "png", outputStream)
+        println("цвет $color применён")
         return outputStream.toByteArray()
     }
 
@@ -43,8 +44,7 @@ object JsonReplacer {
 
             fun String.transform(): String {
                 return this
-                    .replace(blockId.namespace, customBlockId.namespace)
-                    .replace(blockId.path, customBlockId.path)
+                    .replace("${blockId.namespace}:block/${blockId.path}", "${customBlockId.namespace}:block/${customBlockId.path}")
             }
 
             addJson(JsonType.BLOCKSTATE, customBlockId.path, template.blockstate.transform())
