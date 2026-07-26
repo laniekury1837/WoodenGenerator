@@ -18,11 +18,11 @@ data class WoodConfigData(
     val mangroveUp: Boolean = false,
 
     //client:
-    val woodColor: Int = 0,
+    val woodColor: Int,
     val grassColor: Int = 0,
     val leavesColor: Int = grassColor,
     val doorForm: WoodForm = WoodForm.OAK,
-    val trapdoorForm: WoodForm = WoodForm.OAK,
+    val trapdoorForm: WoodForm = doorForm,
     val treeBlockForm: WoodForm = WoodForm.OAK,
 ): ConfigData {
     override fun register(): Family {

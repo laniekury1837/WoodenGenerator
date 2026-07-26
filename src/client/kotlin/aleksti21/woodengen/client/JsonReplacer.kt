@@ -4,6 +4,8 @@ import aleksti21.woodengen.Family
 import aleksti21.woodengen.JsonType
 import aleksti21.woodengen.addImage
 import aleksti21.woodengen.addJson
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
+import net.minecraft.client.render.RenderLayer
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import java.awt.Color
@@ -45,7 +47,8 @@ object JsonReplacer {
 
             fun String.transform(): String {
                 return this
-                    .replace("${blockId.namespace}:block/${blockId.path}", "${customBlockId.namespace}:block/${customBlockId.path}")
+                    .replace("${blockId.namespace}:block/${blockId.path}", "${customBlockId.namespace}:block/${blockId.path.replace(
+                        family.getForm(part).name.lowercase(), family.config.id)}")
             }
 
             addJson(JsonType.BLOCKSTATE, customBlockId.path, template.blockstate.transform())
@@ -57,6 +60,8 @@ object JsonReplacer {
                 val key = Identifier.of(key).path
                 addImage(listOf(customBlockId.namespace, "textures", key.substringBefore("/"), "${key.substringAfter("/")}.png"), recolor(bytes, family.getColorForPart(part)))
             }
+
+            if (part.isCutout) BlockRenderLayerMap.INSTANCE.putBlock(block, RenderLayer.getCutout())
 
             println("[JsonReplacer] 🛠️ Заменяем и регистрируем в YARRP: ${customBlockId.path}")
             println("   - Зарегистрированы модели: ${template.blockModels.keys.map { it.transform() }}")

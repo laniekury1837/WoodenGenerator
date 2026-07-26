@@ -8,4 +8,5 @@ interface BlockPart {
     val factory: (AbstractBlock.Settings) -> Block
     val multiplier: Float
     val name: String
+    val isCutout: Boolean
 }

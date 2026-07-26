@@ -1,6 +1,8 @@
 package aleksti21.woodengen.Wood
 
-enum class WoodForm {
+import aleksti21.woodengen.Form
+
+enum class WoodForm: Form {
     OAK,
     SPRUCE,
     BIRCH,
