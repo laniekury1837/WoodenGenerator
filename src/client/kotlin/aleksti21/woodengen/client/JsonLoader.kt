@@ -6,6 +6,7 @@ import aleksti21.woodengen.Registrator
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
+import net.minecraft.client.MinecraftClient
 import net.minecraft.registry.Registries
 import net.minecraft.resource.ResourceManager
 import net.minecraft.util.Identifier
@@ -61,8 +62,10 @@ object JsonLoader : SimpleSynchronousResourceReloadListener {
                 }
                 //5: final
                 JSON_MAP[item] = JsonDataClientTemplate(blockstateString, blockModels, itemModelString, textures)
+                println("[JsonLoader] ✅ Загружен шаблон для: ${item.name}. Модели блоков: ${blockModels.keys}")
             }
         }
         Registrator.families.forEach { family -> JsonReplacer.transformAndRegister(family) }
+        MinecraftClient.getInstance().reloadResources()
     }
 }

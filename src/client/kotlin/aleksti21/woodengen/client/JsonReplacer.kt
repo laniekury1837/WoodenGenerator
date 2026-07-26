@@ -56,6 +56,9 @@ object JsonReplacer {
                 val key = Identifier.of(key).path
                 addImage(listOf(customBlockId.namespace, "textures", key.substringBefore("/"), "${key.substringAfter("/")}.png"), recolor(bytes, family.getColorForPart(part)))
             }
+
+            println("[JsonReplacer] 🛠️ Заменяем и регистрируем в YARRP: ${customBlockId.path}")
+            println("   - Зарегистрированы модели: ${template.blockModels.keys.map { it.transform() }}")
         }
     }
 }
