@@ -20,17 +20,16 @@ object JsonReplacer {
         val tr = (color shr 16) and 0xFF
         val tg = (color shr 8) and 0xFF
         val tb = (color and 0xFF)
+        val targetHsb = FloatArray(3)
+        Color.RGBtoHSB(tr, tg, tb, targetHsb)
 
         for (x in 0 until image.width) {
             for (y in 0 until image.height) {
-                val argb = Color(image.getRGB(x, y), true)
-                if (argb.alpha != 0) {
-                    val gray = (argb.red + argb.green + argb.blue) / 3
-                    val r = tr * gray / 255
-                    val g = tg * gray / 255
-                    val b = tb * gray / 255
-                    image.setRGB(x, y, Color(r,g,b, argb.alpha).rgb)
-                }
+                val argb = Color(image.getRGB(x, y))
+                val pixelHsb = FloatArray(3)
+                val newRgb = Color.HSBtoRGB(targetHsb[0], targetHsb[1], pixelHsb[2])
+                val finalColor = Color(Color(newRgb).red, Color(newRgb).green, Color(newRgb).blue, argb.alpha)
+                image.setRGB(x,y, finalColor.rgb)
             }
         }
         val outputStream = ByteArrayOutputStream()
@@ -47,8 +46,7 @@ object JsonReplacer {
 
             fun String.transform(): String {
                 return this
-                    .replace("${blockId.namespace}:block/${blockId.path}", "${customBlockId.namespace}:block/${blockId.path.replace(
-                        family.getForm(part).name.lowercase(), family.config.id)}")
+                    .replace("${blockId.namespace}:block/${family.getForm(part).name.lowercase()}", "${customBlockId.namespace}:block/${family.config.id}")
             }
 
             addJson(JsonType.BLOCKSTATE, customBlockId.path, template.blockstate.transform())
